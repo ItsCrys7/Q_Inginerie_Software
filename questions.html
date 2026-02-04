@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ro" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevCards: Software Engineering</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Inter"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    },
+                    colors: {
+                        cyber: {
+                            dark: '#0f172a',
+                            card: '#1e293b',
+                            accent: '#38bdf8', // Sky Blue
+                            glow: 'rgba(56, 189, 248, 0.5)'
+                        }
+                    },
+                    boxShadow: {
+                        'neon': '0 0 15px rgba(56, 189, 248, 0.3), 0 0 5px rgba(56, 189, 248, 0.1)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Background Grid Animation */
+        body {
+            background-color: #0f172a;
+            background-image: 
+                linear-gradient(rgba(56, 189, 248, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(56, 189, 248, 0.05) 1px, transparent 1px);
+            background-size: 30px 30px;
+            transition: background-color 0.3s ease;
+        }
+
+        html.light body {
+            background-color: #f8fafc;
+            background-image: 
+                linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+        }
+
+        /* 3D Flip Mechanics */
+        .perspective-1000 { perspective: 1000px; }
+        .transform-style-3d { transform-style: preserve-3d; }
+        .backface-hidden { backface-visibility: hidden; }
+        .rotate-y-180 { transform: rotateY(180deg); }
+
+        /* Tech Card Styling */
+        .tech-card {
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        
+        .code-snippet {
+            background: rgba(0, 0, 0, 0.3);
+            border-left: 3px solid #38bdf8;
+            padding: 0.5rem 1rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4 text-slate-100 selection:bg-cyan-500 selection:text-white overflow-hidden">
+
+    <div class="w-full max-w-4xl flex flex-col md:flex-row justify-between items-center mb-8 gap-4 z-10">
+        <div>
+            <h1 class="text-3xl md:text-4xl font-extrabold font-mono tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600 dark:from-cyan-300 dark:to-blue-500">
+                <i class="fas fa-terminal text-sm mr-2 text-slate-500"></i>DevCards_
+            </h1>
+            <p class="text-xs text-slate-400 font-mono mt-1">// Inginerie Software & Design Patterns</p>
+        </div>
+
+        <div class="flex gap-3">
+            <button onclick="shuffleDeck()" class="px-4 py-2 rounded bg-slate-800 border border-slate-700 hover:border-cyan-500 hover:text-cyan-400 transition-all font-mono text-xs flex items-center gap-2 group">
+                <i class="fas fa-random group-hover:rotate-180 transition-transform"></i> SHUFFLE
+            </button>
+            <button onclick="toggleTheme()" class="px-4 py-2 rounded bg-slate-800 border border-slate-700 hover:border-yellow-500 hover:text-yellow-400 transition-all font-mono text-xs flex items-center gap-2">
+                <i class="fas fa-adjust"></i> THEME
+            </button>
+        </div>
+    </div>
+
+    <div class="relative w-full max-w-3xl h-[400px] perspective-1000 group z-10">
+        
+        <div class="absolute -top-6 right-0 font-mono text-xs text-cyan-500/80">
+            <span id="current-index">01</span> / <span id="total-count">25</span>
+        </div>
+
+        <div id="card-inner" class="relative w-full h-full transform-style-3d tech-card cursor-pointer" onclick="flipCard()">
+            
+            <div class="absolute w-full h-full backface-hidden bg-slate-900/90 dark:bg-slate-900/90 bg-white/90 backdrop-blur-xl border border-slate-700 dark:border-slate-700 border-slate-200 rounded-xl shadow-2xl flex flex-col items-center justify-center p-8">
+                <div class="absolute top-4 left-4 w-2 h-2 rounded-full bg-red-500"></div>
+                <div class="absolute top-4 left-8 w-2 h-2 rounded-full bg-yellow-500"></div>
+                <div class="absolute top-4 left-12 w-2 h-2 rounded-full bg-green-500"></div>
+                <div class="absolute top-4 right-4 text-xs font-mono text-slate-500">class Question extends Flashcard</div>
+
+                <div class="text-center">
+                    <span class="inline-block px-3 py-1 mb-4 text-xs font-bold tracking-wider text-cyan-400 bg-cyan-900/20 rounded-full border border-cyan-500/30 font-mono">
+                        INPUT
+                    </span>
+                    <h2 id="front-text" class="text-2xl md:text-4xl font-bold text-slate-100 dark:text-slate-100 text-slate-800 leading-tight">
+                        </h2>
+                </div>
+
+                <div class="absolute bottom-6 text-slate-500 text-xs font-mono animate-pulse">
+                    [Click or Space to Compile]
+                </div>
+            </div>
+
+            <div class="absolute w-full h-full backface-hidden rotate-y-180 bg-gradient-to-br from-slate-800 to-slate-900 dark:from-slate-800 dark:to-slate-900 from-slate-100 to-slate-200 border border-cyan-500/50 rounded-xl shadow-[0_0_30px_rgba(6,182,212,0.15)] flex flex-col items-center justify-center p-8">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent"></div>
+                
+                <div class="text-center w-full">
+                    <span class="inline-block px-3 py-1 mb-6 text-xs font-bold tracking-wider text-green-400 bg-green-900/20 rounded-full border border-green-500/30 font-mono">
+                        OUTPUT >>
+                    </span>
+                    <div class="prose prose-invert max-w-none">
+                        <p id="back-text" class="text-lg md:text-xl font-medium text-slate-200 dark:text-slate-200 text-slate-800 leading-relaxed font-mono">
+                            </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex items-center gap-6 mt-10 z-10">
+        <button onclick="prevCard()" class="p-4 rounded-full bg-slate-800 dark:bg-slate-800 bg-white border border-slate-700 hover:border-cyan-500 hover:text-cyan-400 text-slate-400 transition-all shadow-lg active:scale-95 group">
+            <i class="fas fa-chevron-left text-xl group-hover:-translate-x-1 transition-transform"></i>
+        </button>
+        
+        <div class="h-1 w-32 bg-slate-800 rounded-full overflow-hidden">
+            <div id="progress-bar" class="h-full bg-cyan-500 transition-all duration-300" style="width: 0%"></div>
+        </div>
+
+        <button onclick="nextCard()" class="p-4 rounded-full bg-slate-800 dark:bg-slate-800 bg-white border border-slate-700 hover:border-cyan-500 hover:text-cyan-400 text-slate-400 transition-all shadow-lg active:scale-95 group">
+            <i class="fas fa-chevron-right text-xl group-hover:translate-x-1 transition-transform"></i>
+        </button>
+    </div>
+
+    <div class="mt-8 text-xs font-mono text-slate-500 flex gap-4">
+        <span><kbd class="bg-slate-800 px-1 rounded border border-slate-700">SPACE</kbd> flip</span>
+        <span><kbd class="bg-slate-800 px-1 rounded border border-slate-700">←</kbd> prev</span>
+        <span><kbd class="bg-slate-800 px-1 rounded border border-slate-700">→</kbd> next</span>
+    </div>
+
+    <script>
+        // Data Source
+        const flashcards = [
+            { front: "Single Responsibility Principle (SRP)", back: "O clasă trebuie să aibă o singură responsabilitate și un singur motiv pentru a fi modificată." },
+            { front: "Open-Closed Principle (OCP)", back: "Entitățile software trebuie să fie deschise pentru extensie, dar închise pentru modificare." },
+            { front: "Liskov Substitution Principle (LSP)", back: "Obiectele clasei derivate trebuie să poată înlocui obiectele clasei de bază fără a strica programul." },
+            { front: "Interface Segregation Principle (ISP)", back: "Clienții nu trebuie forțați să depindă de interfețe pe care nu le folosesc. Mai bine multe interfețe mici." },
+            { front: "Dependency Inversion Principle (DIP)", back: "Modulele high-level nu trebuie să depindă de cele low-level. Ambele trebuie să depindă de abstracțiuni." },
+            { front: "Singleton Pattern", back: "Garantează că o clasă are o singură instanță și oferă un punct de acces global la ea." },
+            { front: "Factory Method", back: "Definește o interfață pentru crearea unui obiect, dar lasă subclasele să decidă clasa instanțiată." },
+            { front: "Abstract Factory vs Builder", back: "Abstract Factory creează familii de obiecte. Builder construiește obiecte complexe pas cu pas." },
+            { front: "Composite Pattern", back: "Compune obiecte în structuri arborescente (parte-întreg) tratând obiectele individuale și grupurile uniform." },
+            { front: "Decorator Pattern", back: "Adaugă dinamic responsabilități noi unui obiect (wrapper), alternativă flexibilă la moștenire." },
+            { front: "Facade Pattern", back: "Oferă o interfață simplificată (unificată) pentru un set complex de interfețe dintr-un subsistem." },
+            { front: "Strategy Pattern", back: "Definește o familie de algoritmi, îi încapsulează și îi face interschimbabili la runtime." },
+            { front: "Strategy vs Template Method", back: "Strategy folosește compoziția (schimbă tot algoritmul). Template folosește moștenirea (schimbă doar pași)." },
+            { front: "Observer Pattern", back: "Dependență unu-la-mulți: când un obiect își schimbă starea, toți dependenții sunt notificați automat." },
+            { front: "Mediator Pattern", back: "Reduce cuplajul forțând obiectele să comunice printr-un mediator, nu direct între ele." },
+            { front: "Command Pattern", back: "Încapsulează o cerere ca obiect, permițând parametrizarea, cozi de așteptare și operații Undo." },
+            { front: "Invoker (Command)", back: "Obiectul care declanșează comanda (apelează execute), fără a ști detaliile execuției." },
+            { front: "Leaf (Composite)", back: "Elementul terminal din structura arborescentă, care nu are copii." },
+            { front: "Lazy Instantiation", back: "Crearea instanței unice (Singleton) doar la prima accesare, pentru economisirea resurselor." },
+            { front: "De ce Singleton încalcă SRP?", back: "Are două responsabilități: logica de business ȘI gestionarea propriului ciclu de viață." },
+            { front: "Concrete Decorator", back: "Clasă ce extinde funcționalitatea de bază, adăugând comportament înainte/după metoda originală." },
+            { front: "Receiver (Command)", back: "Obiectul care știe efectiv cum să execute operațiunile cerute de comandă." },
+            { front: "Client (Facade)", back: "Interacționează doar cu Fațada, fiind izolat de complexitatea subsistemului." },
+            { front: "Mecanismul Observer", back: "Subiectul menține o listă de observatori și permite abonarea/dezabonarea dinamică." },
+            { front: "SOLID Acronym", back: "S: Single Resp, O: Open-Closed, L: Liskov, I: Interface Seg, D: Dependency Inv." }
+        ];
+
+        // State Management
+        let currentDeck = [...flashcards];
+        let currentIndex = 0;
+        let isFlipped = false;
+
+        // Elements
+        const cardInner = document.getElementById('card-inner');
+        const frontText = document.getElementById('front-text');
+        const backText = document.getElementById('back-text');
+        const currentIndexEl = document.getElementById('current-index');
+        const totalCountEl = document.getElementById('total-count');
+        const progressBar = document.getElementById('progress-bar');
+
+        // Initialization
+        function init() {
+            totalCountEl.innerText = currentDeck.length;
+            updateCardUI();
+        }
+
+        // Core Functions
+        function updateCardUI() {
+            // Unflip first if flipped
+            if(isFlipped) {
+                cardInner.classList.remove('rotate-y-180');
+                isFlipped = false;
+                setTimeout(setTexts, 300); // Wait for half flip
+            } else {
+                setTexts();
+            }
+        }
+
+        function setTexts() {
+            const card = currentDeck[currentIndex];
+            frontText.innerText = card.front;
+            backText.innerText = card.back;
+            
+            // Progress
+            currentIndexEl.innerText = (currentIndex + 1).toString().padStart(2, '0');
+            const progress = ((currentIndex + 1) / currentDeck.length) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        function flipCard() {
+            isFlipped = !isFlipped;
+            cardInner.classList.toggle('rotate-y-180');
+        }
+
+        function nextCard() {
+            if (currentIndex < currentDeck.length - 1) {
+                currentIndex++;
+                updateCardUI();
+            } else {
+                // Shake effect on end
+                cardInner.parentElement.classList.add('animate-bounce');
+                setTimeout(() => cardInner.parentElement.classList.remove('animate-bounce'), 500);
+            }
+        }
+
+        function prevCard() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateCardUI();
+            }
+        }
+
+        function shuffleDeck() {
+            // Fisher-Yates Shuffle
+            for (let i = currentDeck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [currentDeck[i], currentDeck[j]] = [currentDeck[j], currentDeck[i]];
+            }
+            currentIndex = 0;
+            updateCardUI();
+            
+            // Visual feedback for shuffle
+            const btn = event.currentTarget;
+            btn.innerHTML = `<i class="fas fa-check"></i> DONE`;
+            setTimeout(() => btn.innerHTML = `<i class="fas fa-random"></i> SHUFFLE`, 1000);
+        }
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const body = document.body;
+            const frontCard = document.querySelector('#card-inner > div:first-child');
+            const h1 = document.querySelector('h1');
+
+            if (html.classList.contains('light')) {
+                // Switch to Dark (Cyber)
+                html.classList.remove('light');
+                html.classList.add('dark');
+                
+                // Adjust typography colors explicitly if needed
+                frontCard.classList.remove('bg-white/90', 'text-slate-800');
+                frontCard.classList.add('bg-slate-900/90', 'text-slate-100');
+                
+                h1.classList.remove('from-blue-600', 'to-slate-800');
+                h1.classList.add('from-cyan-400', 'to-blue-600');
+            } else {
+                // Switch to Light (Blueprint)
+                html.classList.remove('dark');
+                html.classList.add('light');
+                
+                frontCard.classList.remove('bg-slate-900/90', 'text-slate-100');
+                frontCard.classList.add('bg-white/90', 'text-slate-800');
+
+                h1.classList.remove('from-cyan-400', 'to-blue-600');
+                h1.classList.add('from-blue-600', 'to-slate-800');
+            }
+        }
+
+        // Keyboard Navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                flipCard();
+            } else if (e.code === 'ArrowRight') {
+                nextCard();
+            } else if (e.code === 'ArrowLeft') {
+                prevCard();
+            }
+        });
+
+        // Run
+        init();
+
+    </script>
+</body>
+</html>
